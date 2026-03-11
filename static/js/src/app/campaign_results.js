@@ -114,7 +114,6 @@ var statusMapping = {
     "Email Opened": "opened",
     "Clicked Link": "clicked",
     "Downloaded Attachment": "downloaded",
-    "Opened Attachment": "opened_file",
     "Submitted Data": "submitted_data",
     "Email Reported": "reported",
 }
