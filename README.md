@@ -38,7 +38,7 @@ git clone https://github.com/Juguitos/gophish_fileAttachmentModding.git
 cd gophish_fileAttachmentModding
 
 # Main server / Servidor principal
-go build -ldflags "-X github.com/gophish/gophish/config.Version=0.12.1" -o cyberphish .
+go build -ldflags "-X github.com/gophish/gophish/config.Version=0.12.1" -o gophish .
 
 # Document generator / Generador de documentos
 go build -o gendoc ./cmd/gendoc/
@@ -49,7 +49,7 @@ go build -o gendoc ./cmd/gendoc/
 ## Run / Ejecutar
 
 ```bash
-./cyberphish
+./gophish
 ```
 
 - Admin panel: `https://<your-domain>:3333`
