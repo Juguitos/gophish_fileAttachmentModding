@@ -115,7 +115,7 @@ var statusMapping = {
     "Clicked Link": "clicked",
     "Downloaded Attachment": "downloaded",
     "Submitted Data": "submitted_data",
-    "Email Reported": "reported",
+    "Email Reported": "reported"
 }
 
 // This is an underwhelming attempt at an enum
