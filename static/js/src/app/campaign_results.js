@@ -96,8 +96,8 @@ var statuses = {
         icon: "fa-rocket"
     },
     "Downloaded Attachment": {
-        color: "#9b59b6",
-        label: "label-primary",
+        color: "#f05b4f",
+        label: "label-danger",
         icon: "fa-download",
         point: "ct-point-clicked"
     },
