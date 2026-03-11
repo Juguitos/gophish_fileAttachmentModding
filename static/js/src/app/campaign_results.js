@@ -94,6 +94,18 @@ var statuses = {
     "Campaign Created": {
         label: "label-success",
         icon: "fa-rocket"
+    },
+    "Downloaded Attachment": {
+        color: "#9b59b6",
+        label: "label-primary",
+        icon: "fa-download",
+        point: "ct-point-clicked"
+    },
+    "Opened Attachment": {
+        color: "#e67e22",
+        label: "label-danger",
+        icon: "fa-file-text-o",
+        point: "ct-point-clicked"
     }
 }
 
@@ -111,6 +123,8 @@ var progressListing = [
     "Email Sent",
     "Email Opened",
     "Clicked Link",
+    "Downloaded Attachment",
+    "Opened Attachment",
     "Submitted Data"
 ]
 
@@ -382,12 +396,13 @@ function renderTimeline(data) {
         '<div class="timeline-graph col-sm-6">'
     $.each(campaign.timeline, function (i, event) {
         if (!event.email || event.email == record.email) {
+            var eventStatus = statuses[event.message] || statuses["Unknown"];
             // Add the event
             results += '<div class="timeline-entry">' +
                 '    <div class="timeline-bar"></div>'
             results +=
-                '    <div class="timeline-icon ' + statuses[event.message].label + '">' +
-                '    <i class="fa ' + statuses[event.message].icon + '"></i></div>' +
+                '    <div class="timeline-icon ' + eventStatus.label + '">' +
+                '    <i class="fa ' + eventStatus.icon + '"></i></div>' +
                 '    <div class="timeline-message">' + escapeHtml(event.message) +
                 '    <span class="timeline-date">' + moment.utc(event.time).local().format('MMMM Do YYYY h:mm:ss a') + '</span>'
             if (event.details) {
@@ -842,13 +857,14 @@ function load() {
                         return true
                     }
                     var event_date = moment.utc(event.time).local()
+                    var evtStatus = statuses[event.message] || statuses["Unknown"];
                     timeline_series_data.push({
                         email: event.email,
                         message: event.message,
                         x: event_date.valueOf(),
                         y: 1,
                         marker: {
-                            fillColor: statuses[event.message].color
+                            fillColor: evtStatus.color
                         }
                     })
                 })

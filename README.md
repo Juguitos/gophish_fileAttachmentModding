@@ -1,66 +1,133 @@
-![gophish logo](https://raw.github.com/gophish/gophish/master/static/images/gophish_purple.png)
+# gophish_fileAttachmentModding
 
-Gophish
-=======
+A hardened GoPhish fork for authorized phishing simulations and security awareness campaigns.
+Un fork reforzado de GoPhish para simulaciones de phishing autorizadas y campañas de concienciación.
 
-![Build Status](https://github.com/gophish/gophish/workflows/CI/badge.svg) [![GoDoc](https://godoc.org/github.com/gophish/gophish?status.svg)](https://godoc.org/github.com/gophish/gophish)
+---
 
-Gophish: Open-Source Phishing Toolkit
+## Modifications / Modificaciones
 
-[Gophish](https://getgophish.com) is an open-source phishing toolkit designed for businesses and penetration testers. It provides the ability to quickly and easily setup and execute phishing engagements and security awareness training.
+| Change | Detail |
+|---|---|
+| `X-Gophish-Contact` removed | Eliminado de cabeceras de correo |
+| `X-Gophish-Signature` renamed | → `X-Hub-Signature-256` |
+| `X-Mailer` spoofed | Simula Microsoft Outlook 16.0 |
+| `X-Server: gophish` removed | Eliminado del servidor HTTP |
+| `Server` header | Responde como `Apache/2.4.54 (Ubuntu)` |
+| 404 page | Página de error estilo Apache |
+| Attachment tracking | Nuevas rutas `/download` y `/track-open` |
+| `gendoc` CLI | Genera DOCX/XLSX con pixel de tracking embebido |
 
-### Install
+---
 
-Installation of Gophish is dead-simple - just download and extract the zip containing the [release for your system](https://github.com/gophish/gophish/releases/), and run the binary. Gophish has binary releases for Windows, Mac, and Linux platforms.
+## Requirements / Requisitos
 
-### Building From Source
-**If you are building from source, please note that Gophish requires Go v1.10 or above!**
+- Go 1.18+
+- GCC (for sqlite3)
 
-To build Gophish from source, simply run ```git clone https://github.com/gophish/gophish.git``` and ```cd``` into the project source directory. Then, run ```go build```. After this, you should have a binary called ```gophish``` in the current directory.
-
-### Docker
-You can also use Gophish via the official Docker container [here](https://hub.docker.com/r/gophish/gophish/).
-
-### Setup
-After running the Gophish binary, open an Internet browser to https://localhost:3333 and login with the default username and password listed in the log output.
-e.g.
+```bash
+sudo apt-get install -y golang-go gcc
 ```
-time="2020-07-29T01:24:08Z" level=info msg="Please login with the username admin and the password 4304d5255378177d"
+
+---
+
+## Build / Compilar
+
+```bash
+git clone https://github.com/Juguitos/gophish_fileAttachmentModding.git
+cd gophish_fileAttachmentModding
+
+# Main server / Servidor principal
+go build -ldflags "-X github.com/gophish/gophish/config.Version=0.12.1" -o cyberphish .
+
+# Document generator / Generador de documentos
+go build -o gendoc ./cmd/gendoc/
 ```
 
-Releases of Gophish prior to v0.10.1 have a default username of `admin` and password of `gophish`.
+---
 
-### Documentation
+## Run / Ejecutar
 
-Documentation can be found on our [site](http://getgophish.com/documentation). Find something missing? Let us know by filing an issue!
-
-### Issues
-
-Find a bug? Want more features? Find something missing in the documentation? Let us know! Please don't hesitate to [file an issue](https://github.com/gophish/gophish/issues/new) and we'll get right on it.
-
-### License
+```bash
+./cyberphish
 ```
-Gophish - Open-Source Phishing Framework
 
-The MIT License (MIT)
+- Admin panel: `https://<your-domain>:3333`
+- Phishing server: `http://<your-domain>:80`
 
-Copyright (c) 2013 - 2020 Jordan Wright
+---
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software ("Gophish Community Edition") and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+## Attachment Campaigns / Campañas con Adjunto
 
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
+### 1. Generate tracking document / Generar documento de tracking
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
+```bash
+# DOCX
+./gendoc -url "http://your-domain.com/track-open?rid=PLACEHOLDER" \
+         -o static/attachments/Invoice_March.docx
+
+# XLSX
+./gendoc -url "http://your-domain.com/track-open?rid=PLACEHOLDER" \
+         -o static/attachments/Report_March.xlsx
 ```
+
+### 2. Email template / Plantilla de correo
+
+```html
+<a href="http://your-domain.com/download?rid={{.RId}}&f=Invoice_March.docx">
+  Download Invoice
+</a>
+```
+
+> **Important:** Use your domain directly, **not** `{{.URL}}`.
+> `{{.URL}}` already appends `?rid=...` and will break the link.
+
+### 3. Tracked events / Eventos registrados
+
+| Event | Trigger |
+|---|---|
+| `Downloaded Attachment` | User clicks the download link |
+| `Opened Attachment` | User opens the file in Word/Excel (embedded pixel) |
+
+---
+
+## config.json example
+
+```json
+{
+  "admin_server": {
+    "listen_url": "0.0.0.0:3333",
+    "use_tls": true,
+    "cert_path": "gophish_admin.crt",
+    "key_path": "gophish_admin.key",
+    "trusted_origins": []
+  },
+  "phish_server": {
+    "listen_url": "0.0.0.0:80",
+    "use_tls": false,
+    "cert_path": "example.crt",
+    "key_path": "example.key"
+  },
+  "db_name": "sqlite3",
+  "db_path": "gophish.db",
+  "migrations_prefix": "db/db_",
+  "contact_address": "",
+  "logging": {
+    "filename": "",
+    "level": ""
+  }
+}
+```
+
+---
+
+## Notes / Notas
+
+- The embedded tracking pixel in DOCX/XLSX requires Word/Excel to load external content (may be blocked by corporate policies).
+- El pixel en DOCX/XLSX requiere que Word/Excel cargue contenido externo (puede estar bloqueado en entornos corporativos).
+- Download tracking (`/download`) always works regardless of Office settings.
+- El tracking de descarga (`/download`) funciona siempre independientemente de la configuración de Office.
+
+---
+
+**For authorized security awareness testing only. / Solo para pruebas de concienciación de seguridad autorizadas.**
