@@ -1,0 +1,7 @@
+cyberphish
+gendoc
+*.db
+gophish.db
+static/db/
+config.json
+node_modules/
